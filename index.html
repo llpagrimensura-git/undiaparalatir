@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Circuito Santa Fe - Mapa Interactivo</title>
+    <title>Un Día Para Latir - Mapa del Recorrido</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -40,7 +40,6 @@
             background-color: #f0f0f0;
         }
 
-        /* Filtro gris aplicado a las tiles de OSM */
         .mapa-gris {
             filter: grayscale(100%) brightness(1.08) contrast(0.85);
             opacity: 0.9;
@@ -51,11 +50,11 @@
         }
 
         /* ==========================================
-           CONTROLES FLOTANTES
+           CONTROLES FLOTANTES (ARRIBA)
            ========================================== */
         #controls {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.96);
@@ -185,7 +184,7 @@
         }
 
         /* ==========================================
-           ICONO DE LA CORREDORA (ANIMADO Y CENTRADO)
+           ICONO DE LA CORREDORA
            ========================================== */
         .runner-icon {
             background: transparent;
@@ -211,7 +210,6 @@
             transition: border-color 0.3s ease;
         }
 
-        /* Borde de color según la ruta */
         .runner-icon-inner.primary-larga { border-color: var(--color-naranja); }
         .runner-icon-inner.primary-corta { border-color: var(--color-morado); }
         .runner-icon-inner.secondary-larga { border-color: var(--color-naranja); }
@@ -238,11 +236,14 @@
             line-height: 1;
         }
 
+        /* ==========================================
+           ETIQUETAS DE LOS PUNTOS
+           ========================================== */
         .custom-label {
             background: rgba(255, 255, 255, 0.95);
             border: none;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
             font-weight: 600;
             color: var(--color-texto);
             font-size: 11px;
@@ -253,6 +254,14 @@
 
         .label-agua { background: var(--color-azul); color: white; }
 
+        /* Ocultar la flechita del tooltip para que no ensucie */
+        .custom-label::before {
+            display: none !important;
+        }
+
+        /* ==========================================
+           RESPONSIVE
+           ========================================== */
         @media (max-width: 600px) {
             #controls {
                 flex-wrap: wrap;
@@ -262,7 +271,7 @@
                 gap: 8px;
                 width: calc(100% - 30px);
                 max-width: 400px;
-                bottom: 15px;
+                top: 15px;
             }
 
             select {
@@ -295,7 +304,7 @@
         }
 
         @media (max-height: 500px) and (orientation: landscape) {
-            #controls { bottom: 10px; padding: 8px 12px; gap: 6px; }
+            #controls { top: 10px; padding: 8px 12px; gap: 6px; }
             select { font-size: 12px; padding: 8px 30px 8px 12px; }
             button { padding: 8px 16px; font-size: 13px; }
             .runner-icon-inner { width: 36px; height: 36px; font-size: 24px; }
@@ -326,7 +335,7 @@
 
     <script>
         // ==========================================
-        // 1. MAPA FIJO CON OPENSTREETMAP (SIN API KEY)
+        // 1. MAPA FIJO CON OSM
         // ==========================================
         
         const map = L.map('map', {
@@ -335,7 +344,6 @@
             keyboard: false, zoomSnap: 0.1, attributionControl: false
         }).setView([-31.634, -60.689], 14);
 
-        // Tiles de OpenStreetMap estándar, con filtro gris via CSS
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             subdomains: 'abc',
@@ -414,18 +422,43 @@
         };
 
         // ==========================================
-        // 5. MARCADORES
+        // 5. MARCADORES CON ETIQUETAS REPOSICIONADAS
         // ==========================================
         
         const inicioRuta = idaLarga[0];
         const finRuta = vueltaLarga[vueltaLarga.length - 1];
         const puntoFaro = idaLarga[idaLarga.length - 1];
         
+        // Cada marcador tiene dirección y offset distinto para que no se pisen
         const markers = [
-            { coords: inicioRuta, title: "SALIDA - KALOS CLUB", color: "#ff3385" },
-            { coords: puntoBelgrano, title: "RETORNO 1 - EST. BELGRANO", color: "#9b26b6" },
-            { coords: puntoFaro, title: "RETORNO 2 - FARO", color: "#9b26b6" },
-            { coords: finRuta, title: "LLEGADA - EL MOLINO", color: "#ff6600" }
+            { 
+                coords: inicioRuta, 
+                title: "SALIDA - KALOS CLUB", 
+                color: "#ff3385",
+                direction: 'right',       // a la derecha del punto
+                offset: [10, 0]           // desplazado 10px a la derecha
+            },
+            { 
+                coords: puntoBelgrano, 
+                title: "RETORNO 1 - BELGRANO", 
+                color: "#9b26b6",
+                direction: 'top',         // arriba del punto
+                offset: [0, -10]
+            },
+            { 
+                coords: puntoFaro, 
+                title: "RETORNO 2 - FARO", 
+                color: "#9b26b6",
+                direction: 'top',         // arriba del punto
+                offset: [0, -10]
+            },
+            { 
+                coords: finRuta, 
+                title: "LLEGADA - EL MOLINO", 
+                color: "#ff6600",
+                direction: 'right',       // a la derecha del punto
+                offset: [10, 0]
+            }
         ];
 
         markers.forEach(m => {
@@ -433,11 +466,14 @@
                 radius: 8, fillColor: m.color, color: "#ffffff",
                 weight: 3, opacity: 1, fillOpacity: 1
             }).addTo(map).bindTooltip(m.title, {
-                permanent: true, direction: 'top',
-                className: 'custom-label', offset: [0, -10]
+                permanent: true, 
+                direction: m.direction,
+                className: 'custom-label', 
+                offset: m.offset
             }).openTooltip();
         });
 
+        // Punto de hidratación con etiqueta abajo para no chocar con el resto
         const waterIcon = L.divIcon({
             className: '',
             html: '<div class="water-icon"><span>💧</span></div>',
@@ -445,9 +481,11 @@
         });
 
         L.marker(idaLarga[10], { icon: waterIcon }).addTo(map)
-            .bindTooltip("PUNTO DE HIDRATACIÓN", {
-                permanent: true, direction: 'top',
-                className: 'custom-label label-agua', offset: [0, -25]
+            .bindTooltip("HIDRATACIÓN", {
+                permanent: true, 
+                direction: 'bottom',      // abajo del punto
+                className: 'custom-label label-agua', 
+                offset: [0, 8]
             }).openTooltip();
 
         // ==========================================
@@ -479,12 +517,16 @@
             larga: 250
         };
 
+        // 🎯 Zoom al que se va cuando arranca la animación
+        const FOLLOW_ZOOM = 16;
+        // 🎯 Zoom general (el que se ve al inicio y al reiniciar)
+        const OVERVIEW_ZOOM = 14;
+
         const playBtn = document.getElementById('playBtn');
         const resetBtn = document.getElementById('resetBtn');
         const routeSelect = document.getElementById('routeSelect');
         const verAmbas = document.getElementById('verAmbas');
 
-        // 🏃‍♀️ Icono con borde de color según la ruta
         function makeRunnerIcon(colorClass) {
             return L.divIcon({
                 className: 'runner-icon',
@@ -584,7 +626,6 @@
                 lineJoin: 'round', lineCap: 'round'
             }).addTo(map);
             
-            // Corredora principal con borde del color de SU ruta
             const primaryClass = routeKey === 'larga' ? 'primary-larga' : 'primary-corta';
             primaryRunner = L.marker(primaryPoints[0], {
                 icon: makeRunnerIcon(primaryClass)
@@ -610,13 +651,13 @@
                     lineJoin: 'round', lineCap: 'round'
                 }).addTo(map);
                 
-                // Corredora secundaria con borde del color de SU ruta
                 const secondaryClass = otherKey === 'larga' ? 'secondary-larga' : 'secondary-corta';
                 secondaryRunner = L.marker(secondaryPoints[0], {
                     icon: makeRunnerIcon(secondaryClass)
                 }).addTo(map);
             }
             
+            // Vista general al cargar
             map.fitBounds(primaryPolyline.getBounds(), {padding: [80, 80]});
         }
 
@@ -656,11 +697,30 @@
                 );
             }
 
+            // 📍 Seguir a la corredora principal con zoom
+            const primaryRunnerPos = primaryRunner.getLatLng();
+            map.setView(primaryRunnerPos, FOLLOW_ZOOM, {
+                animate: true,
+                duration: 0.3,
+                noMoveStart: true
+            });
+
             if (primaryFinished && secondaryFinished) {
                 isPlaying = false;
                 playBtn.disabled = false;
                 playBtn.innerHTML = "✅ Terminado";
                 animationId = null;
+                
+                // Al terminar, volver a la vista general
+                setTimeout(() => {
+                    if (primaryPolyline) {
+                        map.fitBounds(primaryPolyline.getBounds(), {
+                            padding: [80, 80],
+                            animate: true,
+                            duration: 1
+                        });
+                    }
+                }, 1000);
                 return;
             }
 
@@ -678,6 +738,14 @@
             lastTimestamp = null;
             playBtn.disabled = true;
             playBtn.innerHTML = "🏃 Corriendo...";
+            
+            // Zoom inmediato al inicio del recorrido
+            const startPos = primaryRunner.getLatLng();
+            map.setView(startPos, FOLLOW_ZOOM, {
+                animate: true,
+                duration: 0.8
+            });
+            
             animationId = requestAnimationFrame(animate);
         }
 
@@ -692,7 +760,7 @@
 
         window.addEventListener('resize', () => {
             map.invalidateSize();
-            if (primaryPolyline) {
+            if (primaryPolyline && !isPlaying) {
                 map.fitBounds(primaryPolyline.getBounds(), {padding: [80, 80]});
             }
         });
