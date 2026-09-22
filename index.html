@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Un Día Para Latir - Mapa del Recorrido</title>
+    <title>Un Día Para Latir</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -45,8 +45,15 @@
             opacity: 0.9;
         }
 
-        .leaflet-control-zoom, .leaflet-control-attribution {
+        .leaflet-control-zoom {
             display: none !important;
+        }
+
+        .leaflet-control-attribution {
+            font-size: 8px !important;
+            opacity: 0.55;
+            background: rgba(255,255,255,0.6) !important;
+            padding: 1px 4px !important;
         }
 
         /* ==========================================
@@ -92,7 +99,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 200px;
+            max-width: 260px;
         }
 
         select:hover { border-color: var(--color-morado); }
@@ -130,6 +137,17 @@
             transform: none;
         }
 
+        /* 🟢 Botón en estado "terminado" */
+        button#playBtn.finished {
+            background-color: var(--color-verde);
+            box-shadow: 0 4px 15px rgba(0, 168, 89, 0.5);
+        }
+
+        button#playBtn.finished:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 168, 89, 0.7);
+        }
+
         button#resetBtn {
             background-color: #ffffff;
             color: var(--color-texto);
@@ -142,45 +160,6 @@
             border-color: var(--color-morado);
             color: var(--color-morado);
             transform: translateY(-2px);
-        }
-
-        .toggle-ambas {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            user-select: none;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--color-texto);
-            padding: 8px 12px;
-            border-radius: 20px;
-            background: #f4f6f9;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-ambas:hover { border-color: var(--color-morado); }
-        .toggle-ambas input { display: none; }
-
-        .toggle-ambas .check-box {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            border: 2px solid #ccc;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            font-size: 11px;
-            color: transparent;
-        }
-
-        .toggle-ambas input:checked + .check-box {
-            background: var(--color-morado);
-            border-color: var(--color-morado);
-            color: white;
         }
 
         /* ==========================================
@@ -254,9 +233,89 @@
 
         .label-agua { background: var(--color-azul); color: white; }
 
-        /* Ocultar la flechita del tooltip para que no ensucie */
         .custom-label::before {
             display: none !important;
+        }
+
+        /* ==========================================
+           SPINNER DE CARGA
+           ========================================== */
+        #loadingSpinner {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #f4f6f9;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            transition: opacity 0.4s ease;
+        }
+
+        #loadingSpinner.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 42px; height: 42px;
+            border: 5px solid #e0e0e0;
+            border-top-color: var(--color-naranja);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #loadingSpinner span {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--color-texto);
+            opacity: 0.6;
+        }
+
+        /* ==========================================
+           BADGE DEL EVENTO
+           ========================================== */
+        #eventBadge {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 8px 14px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        #eventBadge .badge-emoji { font-size: 18px; line-height: 1; }
+
+        #eventBadge .badge-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        #eventBadge .badge-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--color-texto);
+        }
+
+        #eventBadge .badge-sub {
+            font-size: 9px;
+            font-weight: 600;
+            color: #888;
         }
 
         /* ==========================================
@@ -282,12 +341,6 @@
                 background-position: right 12px center;
             }
 
-            .toggle-ambas {
-                flex: 0 0 auto;
-                font-size: 11px;
-                padding: 6px 10px;
-            }
-
             button#playBtn {
                 flex: 1;
                 justify-content: center;
@@ -301,6 +354,10 @@
             .runner-icon-inner { width: 36px; height: 36px; font-size: 24px; }
             .water-icon { width: 26px; height: 26px; }
             .water-icon span { font-size: 14px; }
+
+            #eventBadge { bottom: 10px; left: 10px; padding: 6px 10px; }
+            #eventBadge .badge-title { font-size: 10px; }
+            #eventBadge .badge-sub { font-size: 8px; }
         }
 
         @media (max-height: 500px) and (orientation: landscape) {
@@ -313,22 +370,30 @@
 </head>
 <body>
 
+    <div id="loadingSpinner">
+        <div class="spinner"></div>
+        <span>Cargando mapa...</span>
+    </div>
+
     <div id="map"></div>
 
     <div id="controls">
         <select id="routeSelect">
+            <option value="ambas">🔵 Ambas rutas</option>
+            <option value="corta">🟣 Ruta Corta (Estación Belgrano)</option>
             <option value="larga">🟠 Ruta Larga (Faro)</option>
-            <option value="corta">🟣 Ruta Corta (Belgrano)</option>
         </select>
-
-        <label class="toggle-ambas">
-            <input type="checkbox" id="verAmbas">
-            <span class="check-box">✓</span>
-            Ver ambas
-        </label>
 
         <button id="playBtn">▶ Iniciar</button>
         <button id="resetBtn" title="Reiniciar">🔄</button>
+    </div>
+
+    <div id="eventBadge">
+        
+        <span class="badge-text">
+            <span class="badge-title">Un Día Para Latir</span>
+            <span class="badge-sub">3 de octubre</span>
+        </span>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -344,11 +409,20 @@
             keyboard: false, zoomSnap: 0.1, attributionControl: false
         }).setView([-31.634, -60.689], 14);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             subdomains: 'abc',
             className: 'mapa-gris'
         }).addTo(map);
+
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        let tilesLoaded = false;
+        tileLayer.on('load', () => {
+            if (tilesLoaded) return;
+            tilesLoaded = true;
+            loadingSpinner.classList.add('hidden');
+        });
+        setTimeout(() => loadingSpinner.classList.add('hidden'), 2500);
 
         // ==========================================
         // 2. UTILIDAD
@@ -429,34 +503,33 @@
         const finRuta = vueltaLarga[vueltaLarga.length - 1];
         const puntoFaro = idaLarga[idaLarga.length - 1];
         
-        // Cada marcador tiene dirección y offset distinto para que no se pisen
         const markers = [
             { 
                 coords: inicioRuta, 
                 title: "SALIDA - KALOS CLUB", 
                 color: "#ff3385",
-                direction: 'right',       // a la derecha del punto
-                offset: [10, 0]           // desplazado 10px a la derecha
+                direction: 'right',
+                offset: [10, 0]
             },
             { 
                 coords: puntoBelgrano, 
-                title: "RETORNO 1 - BELGRANO", 
+                title: "RETORNO 1 - ESTACIÓN BELGRANO", 
                 color: "#9b26b6",
-                direction: 'top',         // arriba del punto
+                direction: 'top',
                 offset: [0, -10]
             },
             { 
                 coords: puntoFaro, 
                 title: "RETORNO 2 - FARO", 
                 color: "#9b26b6",
-                direction: 'top',         // arriba del punto
+                direction: 'top',
                 offset: [0, -10]
             },
             { 
                 coords: finRuta, 
                 title: "LLEGADA - EL MOLINO", 
                 color: "#ff6600",
-                direction: 'right',       // a la derecha del punto
+                direction: 'right',
                 offset: [10, 0]
             }
         ];
@@ -473,7 +546,6 @@
             }).openTooltip();
         });
 
-        // Punto de hidratación con etiqueta abajo para no chocar con el resto
         const waterIcon = L.divIcon({
             className: '',
             html: '<div class="water-icon"><span>💧</span></div>',
@@ -483,7 +555,7 @@
         L.marker(idaLarga[10], { icon: waterIcon }).addTo(map)
             .bindTooltip("HIDRATACIÓN", {
                 permanent: true, 
-                direction: 'bottom',      // abajo del punto
+                direction: 'bottom',
                 className: 'custom-label label-agua', 
                 offset: [0, 8]
             }).openTooltip();
@@ -499,6 +571,7 @@
         let primaryCumulative = [];
         let primaryTotal = 0;
         let primaryTraveled = 0;
+        let primaryKey = 'larga';
         
         let secondaryPolyline = null;
         let secondaryPainted = null;
@@ -507,25 +580,24 @@
         let secondaryCumulative = [];
         let secondaryTotal = 0;
         let secondaryTraveled = 0;
+        let secondaryKey = null;
         
         let animationId = null;
         let isPlaying = false;
         let lastTimestamp = null;
 
+        // ⚙️ Velocidad por tipo de ruta (metros por segundo)
         const SPEEDS = {
             corta: 120,
             larga: 250
         };
 
-        // 🎯 Zoom al que se va cuando arranca la animación
         const FOLLOW_ZOOM = 16;
-        // 🎯 Zoom general (el que se ve al inicio y al reiniciar)
         const OVERVIEW_ZOOM = 14;
 
         const playBtn = document.getElementById('playBtn');
         const resetBtn = document.getElementById('resetBtn');
         const routeSelect = document.getElementById('routeSelect');
-        const verAmbas = document.getElementById('verAmbas');
 
         function makeRunnerIcon(colorClass) {
             return L.divIcon({
@@ -601,23 +673,33 @@
             if (secondaryPolyline) { map.removeLayer(secondaryPolyline); secondaryPolyline = null; }
             if (secondaryPainted) { map.removeLayer(secondaryPainted); secondaryPainted = null; }
             if (secondaryRunner) { map.removeLayer(secondaryRunner); secondaryRunner = null; }
-            
+
             playBtn.disabled = false;
+            playBtn.classList.remove('finished');
             playBtn.innerHTML = "▶ Iniciar";
         }
 
         function loadRoute(routeKey) {
             clearMap();
             
+            // Determinar qué rutas mostrar según la opción elegida
+            if (routeKey === 'ambas') {
+                primaryKey = 'larga';
+                secondaryKey = 'corta';
+            } else {
+                primaryKey = routeKey;
+                secondaryKey = null;
+            }
+            
             // ---- RUTA PRINCIPAL ----
-            const primaryRoute = routesData[routeKey];
+            const primaryRoute = routesData[primaryKey];
             primaryPoints = primaryRoute.points;
             const primaryDist = computeCumulativeDistances(primaryPoints);
             primaryCumulative = primaryDist.cumulative;
             primaryTotal = primaryDist.total;
             
             primaryPolyline = L.polyline(primaryPoints, {
-                color: '#d0d0d0', weight: 8, opacity: 0.8,
+                color: primaryRoute.color, weight: 8, opacity: 0.3,
                 lineJoin: 'round', lineCap: 'round'
             }).addTo(map);
             
@@ -626,39 +708,41 @@
                 lineJoin: 'round', lineCap: 'round'
             }).addTo(map);
             
-            const primaryClass = routeKey === 'larga' ? 'primary-larga' : 'primary-corta';
+            const primaryClass = primaryKey === 'larga' ? 'primary-larga' : 'primary-corta';
             primaryRunner = L.marker(primaryPoints[0], {
                 icon: makeRunnerIcon(primaryClass)
             }).addTo(map);
             
-            // ---- RUTA SECUNDARIA ----
-            if (verAmbas.checked) {
-                const otherKey = routeKey === 'larga' ? 'corta' : 'larga';
-                const secondaryRoute = routesData[otherKey];
+            // ---- RUTA SECUNDARIA (solo si "ambas") ----
+            if (secondaryKey) {
+                const secondaryRoute = routesData[secondaryKey];
                 secondaryPoints = secondaryRoute.points;
                 const secondaryDist = computeCumulativeDistances(secondaryPoints);
                 secondaryCumulative = secondaryDist.cumulative;
                 secondaryTotal = secondaryDist.total;
                 
                 secondaryPolyline = L.polyline(secondaryPoints, {
-                    color: '#e0e0e0', weight: 6, opacity: 0.7,
-                    lineJoin: 'round', lineCap: 'round',
-                    dashArray: '10, 8'
-                }).addTo(map);
-                
-                secondaryPainted = L.polyline([], {
-                    color: secondaryRoute.color, weight: 6, opacity: 0.9,
+                    color: secondaryRoute.color, weight: 8, opacity: 0.3,
                     lineJoin: 'round', lineCap: 'round'
                 }).addTo(map);
                 
-                const secondaryClass = otherKey === 'larga' ? 'secondary-larga' : 'secondary-corta';
+                secondaryPainted = L.polyline([], {
+                    color: secondaryRoute.color, weight: 8, opacity: 1,
+                    lineJoin: 'round', lineCap: 'round'
+                }).addTo(map);
+                
+                const secondaryClass = secondaryKey === 'larga' ? 'secondary-larga' : 'secondary-corta';
                 secondaryRunner = L.marker(secondaryPoints[0], {
                     icon: makeRunnerIcon(secondaryClass)
                 }).addTo(map);
             }
             
-            // Vista general al cargar
-            map.fitBounds(primaryPolyline.getBounds(), {padding: [80, 80]});
+            // Vista general
+            let allBounds = primaryPolyline.getBounds();
+            if (secondaryPolyline) {
+                allBounds.extend(secondaryPolyline.getBounds());
+            }
+            map.fitBounds(allBounds, {padding: [80, 80]});
         }
 
         function updateRunner(points, cumulative, total, distance, runner, painted) {
@@ -679,7 +763,7 @@
             const deltaTime = (timestamp - lastTimestamp) / 1000;
             lastTimestamp = timestamp;
 
-            const primarySpeed = SPEEDS[routeSelect.value];
+            const primarySpeed = SPEEDS[primaryKey];
             primaryTraveled += deltaTime * primarySpeed;
             const primaryFinished = updateRunner(
                 primaryPoints, primaryCumulative, primaryTotal,
@@ -688,8 +772,7 @@
             
             let secondaryFinished = true;
             if (secondaryRunner) {
-                const otherKey = routeSelect.value === 'larga' ? 'corta' : 'larga';
-                const secondarySpeed = SPEEDS[otherKey];
+                const secondarySpeed = SPEEDS[secondaryKey];
                 secondaryTraveled += deltaTime * secondarySpeed;
                 secondaryFinished = updateRunner(
                     secondaryPoints, secondaryCumulative, secondaryTotal,
@@ -708,18 +791,18 @@
             if (primaryFinished && secondaryFinished) {
                 isPlaying = false;
                 playBtn.disabled = false;
+                playBtn.classList.add('finished');
                 playBtn.innerHTML = "✅ Terminado";
                 animationId = null;
                 
-                // Al terminar, volver a la vista general
                 setTimeout(() => {
-                    if (primaryPolyline) {
-                        map.fitBounds(primaryPolyline.getBounds(), {
-                            padding: [80, 80],
-                            animate: true,
-                            duration: 1
-                        });
-                    }
+                    let allBounds = primaryPolyline.getBounds();
+                    if (secondaryPolyline) allBounds.extend(secondaryPolyline.getBounds());
+                    map.fitBounds(allBounds, {
+                        padding: [80, 80],
+                        animate: true,
+                        duration: 1
+                    });
                 }, 1000);
                 return;
             }
@@ -737,9 +820,9 @@
             isPlaying = true;
             lastTimestamp = null;
             playBtn.disabled = true;
-            playBtn.innerHTML = "🏃 Corriendo...";
+            playBtn.classList.remove('finished');
+            playBtn.innerHTML = "🏃...";
             
-            // Zoom inmediato al inicio del recorrido
             const startPos = primaryRunner.getLatLng();
             map.setView(startPos, FOLLOW_ZOOM, {
                 animate: true,
@@ -756,16 +839,17 @@
         routeSelect.addEventListener('change', (e) => loadRoute(e.target.value));
         playBtn.addEventListener('click', startAnimation);
         resetBtn.addEventListener('click', () => loadRoute(routeSelect.value));
-        verAmbas.addEventListener('change', () => loadRoute(routeSelect.value));
 
         window.addEventListener('resize', () => {
             map.invalidateSize();
             if (primaryPolyline && !isPlaying) {
-                map.fitBounds(primaryPolyline.getBounds(), {padding: [80, 80]});
+                let allBounds = primaryPolyline.getBounds();
+                if (secondaryPolyline) allBounds.extend(secondaryPolyline.getBounds());
+                map.fitBounds(allBounds, {padding: [80, 80]});
             }
         });
 
-        loadRoute('larga');
+        loadRoute('ambas');
     </script>
 </body>
 </html>
